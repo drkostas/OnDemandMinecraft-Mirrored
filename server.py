@@ -119,7 +119,10 @@ class Mineserver:
                 # SETUP MULTIPROCESSING HERE INSTEAD OF REDIS
                 returnString = self.start_server(client)
             elif stateName == 'running':
-                returnString = 'IP: ' + instance['PublicIpAddress']
+                p = Process(target=self.init_server_commands, args=(instance['PublicIpAddress'],))
+                p.start()
+                returnString = 'IP: ' + instance['PublicIpAddress'] + ' <br> Click <a href="http://' + instance[
+                    'PublicIpAddress'] + ':8123/" target="_blank" >here</a>  to view the world from your browser.'
             else:
                 returnString = 'ERROR'
         return returnString
@@ -164,7 +167,7 @@ class Mineserver:
             returnString = 'ERROR'
         else:
             ipAddress = instance['PublicIpAddress']
-            returnString = 'Server is starting, this may take a few minutes.\nIP: ' + ipAddress
+            returnString = 'Server is starting, this may take a few minutes. <br> IP: ' + ipAddress + ' <br> Click <a href="http://' + ipAddress + ':8123/" target="_blank" >here</a> to view the world from your browser.'
             # SETUP MULTIPROCESSING HERE INSTEAD OF REDIS
             p = Process(target=self.server_wait_ok, args=(ipAddress, client))
             p.start()
@@ -184,6 +187,7 @@ class Mineserver:
         status = 'initializing'
         instanceIds = [self.instance_id]
 
+        logger.info("\nWaiting for server to start..\n")
         while (not checksPassed) and (status == 'initializing'):
             statusCheckResponse = client.describe_instance_status(InstanceIds=instanceIds)
             instanceStatuses = statusCheckResponse['InstanceStatuses']
@@ -203,11 +207,13 @@ class Mineserver:
         # Connect/ssh to an instance
         try:
             # Here 'ubuntu' is user name and 'instance_ip' is public IP of EC2
+            logger.info('\nAttempting to ssh to the server..\n')
             sshClient.connect(hostname=instanceIp, username="ubuntu", pkey=key)
 
             # Execute a command(cmd) after connecting/ssh to an instance
-            stdin, stdout, stderr = sshClient.exec_command(
-                "screen -dmS minecraft bash -c 'sudo java " + self.memory_allocation + "-jar server.jar nogui'")
+            ssh_command = "if ! screen -list | grep -q 'minecraft'; then screen -dmS minecraft bash -c 'cd SPIGOT_SERVER && sudo java " + Config.MEMORY_ALLOCATION + "-jar spigot-1.15.2.jar'; fi"
+            logger.info('\nSending the screen command:\n%s\n' % ssh_command)
+            stdin, stdout, stderr = sshClient.exec_command(ssh_command)
             logger.info("COMMAND EXECUTED")
             # close the client connection once the job is done
             sshClient.close()
