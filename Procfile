@@ -1,1 +1,1 @@
-web:python server.py -c configs/ec2_conf_with_os_vars.yml -l logs/out.log -r run_flask
+web: python server.py -c configs/ec2_conf_with_os_vars.yml -l logs/out.log -r run_flask
