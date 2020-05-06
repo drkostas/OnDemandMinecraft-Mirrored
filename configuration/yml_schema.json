@@ -122,10 +122,18 @@
         "config": {
           "type": "object",
           "required": [
-            "server_password"
+            "server_password",
+            "permitted_days",
+            "server_closed_message"
           ],
           "properties": {
             "server_password": {
+              "type": "string"
+            },
+            "permitted_days": {
+              "type": "string"
+            },
+            "server_closed_message": {
               "type": "string"
             }
           },

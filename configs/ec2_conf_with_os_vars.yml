@@ -19,6 +19,8 @@ mineserver:
 web_client:
   - config:
       server_password: !ENV ${SERVER_PASSWORD}
+      permitted_days: !ENV ${PERMITTED_DAYS}
+      server_closed_message: !ENV ${SERVER_CLOSED_MESSAGE}
 # Optional
 cloudstore:
   - config:

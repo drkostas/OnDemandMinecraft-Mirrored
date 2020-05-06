@@ -8,6 +8,7 @@ import boto3
 import time
 import paramiko
 import os
+from datetime import datetime
 
 from configuration.configuration import Configuration
 from cloudstore.dropbox_cloudstore import DropboxCloudstore
@@ -211,7 +212,7 @@ class Mineserver:
             sshClient.connect(hostname=instanceIp, username="ubuntu", pkey=key)
 
             # Execute a command(cmd) after connecting/ssh to an instance
-            ssh_command = "if ! screen -list | grep -q 'minecraft'; then screen -dmS minecraft bash -c 'cd SPIGOT_SERVER && sudo java " + Config.MEMORY_ALLOCATION + "-jar spigot-1.15.2.jar'; fi"
+            ssh_command = "if ! screen -list | grep -q 'minecraft'; then screen -dmS minecraft bash -c 'cd SPIGOT_SERVER && sudo java " + self.memory_allocation + "-jar spigot-1.15.2.jar'; fi"
             logger.info('\nSending the screen command:\n%s\n' % ssh_command)
             stdin, stdout, stderr = sshClient.exec_command(ssh_command)
             logger.info("COMMAND EXECUTED")
@@ -288,14 +289,19 @@ def initServerMC():
     message = "Password Incorrect!"
 
     if inputPass == web_client_config['server_password']:
-        # Instantiate server here or return ip address if already running
-        client = boto3.client(
-            'ec2',
-            aws_access_key_id=aws_config['access_key'],
-            aws_secret_access_key=aws_config['secret_key'],
-            region_name=aws_config['ec2_region']
-        )
-        message = mineserver.manage_server(client)
+        today_day = datetime.today().strftime('%A')
+        print("Today is %s. The permitted days are: %s" % (today_day, web_client_config['permitted_days']))
+        if not today_day in web_client_config['permitted_days']:
+            message = web_client_config['server_closed_message']
+        else:
+            # Instantiate server here or return ip address if already running
+            client = boto3.client(
+                'ec2',
+                aws_access_key_id=aws_config['access_key'],
+                aws_secret_access_key=aws_config['secret_key'],
+                region_name=aws_config['ec2_region']
+            )
+            message = mineserver.manage_server(client)
 
     logger.info(message)
     return render_template('index.html', ipMessage=message)
@@ -313,6 +319,7 @@ if __name__ == "__main__":
     aws_config = config.get_aws_configs()[0]
     mineserver_config = config.get_mineserver_configs()[0]
     web_client_config = config.get_web_client_configs()[0]
+    web_client_config['permitted_days'] = [day.strip() for day in web_client_config['permitted_days'].split(',')]
 
     if args.run_mode == 'run_flask':
         logger = logging.getLogger('Flask App')
