@@ -216,7 +216,7 @@ class Mineserver:
             sshClient.connect(hostname=instanceIp, username="ubuntu", pkey=key)
 
             # Execute a command(cmd) after connecting/ssh to an instance
-            ssh_command = "if ! screen -list | grep -q 'minecraft'; then screen -dmS minecraft bash -c 'cd SPIGOT_SERVER && sudo java " + self.memory_allocation + "-jar spigot-1.16.3.jar'; fi"
+            ssh_command = "if ! screen -list | grep -q 'minecraft'; then screen -dmS minecraft bash -c 'cd SPIGOT_SERVER && sudo java " + self.memory_allocation + "-jar spigot-1.15.2.jar'; fi"
             logger.info('\nSending the screen command:\n%s\n' % ssh_command)
             stdin, stdout, stderr = sshClient.exec_command(ssh_command)
             logger.info("COMMAND EXECUTED")
