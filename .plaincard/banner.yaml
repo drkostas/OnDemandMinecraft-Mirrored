@@ -1,0 +1,15 @@
+kind: banner
+name: OnDemandMinecraft-Mirrored
+line: Starts a Minecraft server on AWS when players ask for it and stops it when nobody
+  plays.
+accent: amber
+diagram:
+- user:
+    label: players
+- arrow: start
+- cloud:
+    label: aws
+- line
+- server:
+    label: minecraft
+    accent: true
